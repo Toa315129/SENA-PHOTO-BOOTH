@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SENA BOOTH</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600&display=swap" rel="stylesheet">
+
+<style>
+  body{
+    margin:0;
+    background:#fdfdfd;
+    font-family:"Baloo 2",sans-serif;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:100vh;
+  }
+  .container{
+    width:100%;
+    max-width:420px;
+    text-align:center;
+  }
+  video{
+    width:100%;
+    border-radius:10px;
+    display:block;
+  }
+  #countdown{
+    position:absolute;
+    top:50%;left:50%;
+    transform:translate(-50%,-50%);
+    font-size:5em;
+    color:white;
+    text-shadow:0 0 20px black;
+    display:none;
+  }
+  #frameCanvas{
+    width:100%;
+    margin-top:15px;
+    border:8px solid #000;
+    border-radius:16px;
+    background:#fff;
+  }
+  button{
+    margin-top:12px;
+    padding:10px 20px;
+    border:none;
+    border-radius:8px;
+    background:#111;
+    color:#fff;
+    font-size:1.1em;
+    cursor:pointer;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div style="position:relative;">
+    <video id="video" autoplay playsinline></video>
+    <div id="countdown"></div>
+  </div>
+  <button id="startBtn">📸 เริ่มถ่าย 3 รูป</button>
+  <canvas id="frameCanvas"></canvas>
+</div>
+
+<script>
+const video = document.getElementById("video");
+const startBtn = document.getElementById("startBtn");
+const countdownEl = document.getElementById("countdown");
+const frameCanvas = document.getElementById("frameCanvas");
+const fctx = frameCanvas.getContext("2d");
+
+let shots = [];
+
+async function initCamera(){
+  const stream = await navigator.mediaDevices.getUserMedia({ video:{facingMode:"user"} });
+  video.srcObject = stream;
+}
+initCamera();
+
+function countdown(sec){
+  return new Promise(res=>{
+    countdownEl.style.display="block";
+    let s = sec;
+    countdownEl.textContent=s;
+    let t = setInterval(()=>{
+      s--;
+      if(s===0){
+        clearInterval(t);
+        countdownEl.style.display="none";
+        res();
+      } else {
+        countdownEl.textContent=s;
+      }
+    },1000);
+  });
+}
+
+function takeShot(){
+  const c = document.createElement("canvas");
+  c.width = video.videoWidth;
+  c.height = video.videoHeight;
+  const ctx = c.getContext("2d");
+  ctx.translate(c.width,0);
+  ctx.scale(-1,1); // mirror selfie
+  ctx.drawImage(video,0,0,c.width,c.height);
+  return c;
+}
+
+async function startSequence(){
+  shots = [];
+  for(let i=0;i<3;i++){
+    await countdown(3);
+    shots.push(takeShot());
+  }
+  composeFrame();
+}
+
+function composeFrame(){
+  // กำหนดขนาดกรอบ (แนวตั้ง 4x6)
+  const W = 1200, H = 1800;
+  frameCanvas.width=W;
+  frameCanvas.height=H;
+
+  // พื้นหลังขาว
+  fctx.fillStyle="#fff";
+  fctx.fillRect(0,0,W,H);
+
+  // หัวข้อ
+  fctx.fillStyle="#000";
+  fctx.textAlign="center";
+  fctx.font="bold 72px 'Baloo 2',sans-serif";
+  fctx.fillText("SENA BOOTH", W/2, 100);
+  fctx.font="36px 'Baloo 2',sans-serif";
+  fctx.fillText("@saphasena68", W/2, 150);
+
+  // จัดเรียงรูป 3 ช่อง
+  const margin=80;
+  const gap=30;
+  const slotH=(H-300 - margin*2 - gap*2)/3;
+  const slotW=W-margin*2;
+
+  shots.forEach((shot,i)=>{
+    const x=margin, y=200+margin+i*(slotH+gap);
+    // ครอปรูปให้พอดีช่อง
+    const sw=shot.width, sh=shot.height;
+    const arS=sw/sh, arSlot=slotW/slotH;
+    let dw,dh,dx,dy;
+    if(arS>arSlot){ dh=slotH; dw=dh*arS; }
+    else{ dw=slotW; dh=dw/arS; }
+    dx=x-(dw-slotW)/2;
+    dy=y-(dh-slotH)/2;
+    fctx.drawImage(shot,dx,dy,dw,dh);
+
+    // เส้นกรอบแต่ละช่อง
+    fctx.lineWidth=10;
+    fctx.strokeStyle="#000";
+    fctx.strokeRect(x,y,slotW,slotH);
+  });
+}
+
+startBtn.onclick=()=>startSequence();
+</script>
+</body>
+</html>
