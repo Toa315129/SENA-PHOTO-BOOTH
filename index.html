@@ -3,23 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SENA PHOTOBOOTH</title>
-<!-- ฟอนต์ Patrick Hand -->
-<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+<title>Sena booth</title>
+
+<!-- ฟอนต์สคริปต์เขียนติดกัน -->
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+
 <style>
 :root{
   --bg:#ffffff;
-  --green:#3ea67a;
-  --green-light:#b5e1c6;
+  --green:#3ea67a; /* ยังคงใช้สำหรับปุ่ม แต่ไม่ใช้กับกรอบดาวน์โหลด */
   --muted:#e6e9ee;
-  --text:#2e3d34;
 }
 *{box-sizing:border-box}
 html,body{
   height:100%;margin:0;
   background:var(--bg);
-  font-family:"Patrick Hand",sans-serif;
-  color:var(--text);
+  font-family:"Great Vibes",cursive;
   display:flex;align-items:center;justify-content:center;padding:18px
 }
 .container{
@@ -32,18 +31,13 @@ html,body{
 
 /* header */
 .header{
-  display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;
-  flex-wrap:wrap;
+  text-align:center;
+  margin-bottom:20px;
 }
 .header .brand{
   font-weight:400;
-  font-size:26px;
-  color:var(--green);
-}
-.header .brand small{
-  display:block;
-  font-size:16px;
-  color:var(--green);
+  font-size:48px;
+  color:#1f3a2d;
 }
 
 /* layout */
@@ -97,6 +91,7 @@ html,body{
   cursor:pointer;
   box-shadow:0 4px 10px rgba(16,24,40,0.05);
   transition:all 0.2s ease;
+  font-family:sans-serif;
 }
 .btn:hover:not(:disabled){
   background:var(--green);
@@ -130,19 +125,21 @@ html,body{
 }
 .thumb img{width:100%;height:100%;object-fit:cover}
 
-/* responsiveness */
 @media(min-width:900px){
   .camera-wrap{flex:1 1 60%}
   .gallery{flex:0 0 36%;}
 }
-.note{font-size:14px;color:var(--green);text-align:center;margin-top:6px}
+.note{
+  font-family:sans-serif;
+  font-size:14px;color:var(--green);
+  text-align:center;margin-top:6px
+}
 </style>
 </head>
 <body>
 <div class="container" role="application" aria-label="SENA Photobooth">
   <div class="header">
-    <div class="brand">Photo Booth <small>@saphasena68</small></div>
-    <div style="text-align:right;font-weight:700;color:var(--green)">SENA PHOTOBOOTH</div>
+    <div class="brand">Sena booth</div>
   </div>
 
   <div class="main">
@@ -153,17 +150,17 @@ html,body{
         <div class="flash" id="flash"></div>
       </div>
 
-      <div class="controls" style="margin-top:10px">
+      <div class="controls">
         <div class="shutter" id="shutter" aria-label="Shutter button" title="ถ่ายภาพ"></div>
         <button class="btn" id="retake" disabled>ถ่ายใหม่</button>
         <button class="btn" id="switch">สลับกล้อง</button>
         <button class="btn" id="download" disabled>ดาวน์โหลด</button>
       </div>
-      <div class="note">กดชัตเตอร์ครั้งเดียว → ถ่าย 3 ช็อต (3 วินาที) มีหยุด 1 วินาทีก่อนช็อตถัดไป</div>
+      <div class="note">กดชัตเตอร์ครั้งเดียว → ถ่าย 3 ช็อต (3 วินาที)</div>
     </div>
 
     <div class="gallery" aria-live="polite">
-      <div style="font-weight:700;color:var(--green)">ตัวอย่าง 3 ภาพ</div>
+      <div style="font-weight:700;color:var(--green);font-family:sans-serif">ตัวอย่าง 3 ภาพ</div>
       <div class="thumbs" id="thumbs">
         <div class="thumb" id="t1"><span style="opacity:.4;color:var(--green)">1</span></div>
         <div class="thumb" id="t2"><span style="opacity:.4;color:var(--green)">2</span></div>
@@ -173,13 +170,9 @@ html,body{
   </div>
 </div>
 
-<!-- shutter sound -->
 <audio id="snap" src="https://cdn.jsdelivr.net/gh/naptha/talkdemo/snap.mp3" preload="auto"></audio>
 
 <script>
-/* JS เหมือนต้นฉบับทุกฟังก์ชัน
-   เพียงปรับสีในส่วน canvas download เป็นโทนเขียว + ดาวเขียวอ่อน */
-
 (async()=>{
 const video=document.getElementById('video');
 const shutter=document.getElementById('shutter');
@@ -196,7 +189,8 @@ let stream=null,useFront=true,captures=[null,null,null];
 async function startCamera(){
   if(stream){stream.getTracks().forEach(t=>t.stop()); stream=null;}
   try{
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:useFront?'user':'environment'},audio:false});
+    stream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:useFront?'user':'environment'},audio:false});
     video.srcObject=stream; await video.play();
   }catch(e){alert('ไม่สามารถเปิดกล้องได้');}
 }
@@ -215,116 +209,3 @@ function captureFrame(){
 
 function showCount(num){countdownEl.textContent=num;}
 function hideCount(){countdownEl.textContent='';}
-
-function doFlash(){
-  snap.currentTime=0; snap.play().catch(()=>{});
-  flash.classList.add('show');
-  setTimeout(()=>flash.classList.remove('show'),170);
-}
-
-function loadImage(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src;});}
-
-async function takeSequence(){
-  captures=[null,null,null];
-  thumbs.forEach((t,i)=> t.innerHTML=`<span style="opacity:.4;color:#3ea67a">${i+1}</span>`);
-  retakeBtn.disabled=true; downloadBtn.disabled=true; shutter.style.pointerEvents='none';
-  for(let i=0;i<3;i++){
-    for(let s=3;s>=1;s--){showCount(s);await new Promise(r=>setTimeout(r,1000));}
-    hideCount();
-    doFlash();
-    const data=captureFrame();
-    captures[i]=data;
-    thumbs[i].innerHTML=`<img src="${data}" alt="shot ${i+1}">`;
-    if(i<2) await new Promise(r=>setTimeout(r,1000));
-  }
-  retakeBtn.disabled=false; downloadBtn.disabled=false; shutter.style.pointerEvents='';
-}
-shutter.addEventListener('click',()=>{takeSequence();});
-retakeBtn.addEventListener('click',()=>{
-  captures=[null,null,null];
-  thumbs.forEach((t,i)=> t.innerHTML=`<span style="opacity:.4;color:#3ea67a">${i+1}</span>`);
-  downloadBtn.disabled=true;
-});
-
-downloadBtn.addEventListener('click',async()=>{
-  if(!captures[0]) return alert('ยังไม่ได้ถ่ายรูป');
-  const W=1200,H=1800;
-  const c=document.createElement('canvas'); c.width=W; c.height=H;
-  const ctx=c.getContext('2d');
-
-  function roundRect(ctx,x,y,w,h,r,fill,stroke){
-    ctx.beginPath();
-    ctx.moveTo(x+r,y);
-    ctx.arcTo(x+w,y,x+w,y+h,r);
-    ctx.arcTo(x+w,y+h,x,y+h,r);
-    ctx.arcTo(x,y+h,x,y,r);
-    ctx.arcTo(x,y,x+w,y,r);
-    ctx.closePath();
-    if(fill) ctx.fill();
-    if(stroke) ctx.stroke();
-  }
-
-  ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,W,H);
-  ctx.strokeStyle='#3ea67a'; ctx.lineWidth=14;
-  roundRect(ctx,20,20,W-40,H-40,30,false,true);
-
-  ctx.fillStyle='#3ea67a';
-  ctx.font='56px "Patrick Hand"';
-  ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillText('Photo Booth @saphasena68',W/2,80);
-
-  const marginX=80, gap=36, topY=140;
-  const innerW=W - marginX*2;
-  const availableH = H - topY - 140;
-  const boxH = Math.floor((availableH - gap*2)/3);
-  const boxW = innerW;
-
-  ctx.lineWidth=8;
-  for(let i=0;i<3;i++){
-    const y = topY + i*(boxH + gap);
-    ctx.fillStyle='#ffffff';
-    roundRect(ctx,marginX,y,boxW,boxH,20,true,true);
-    ctx.save();
-    roundRect(ctx,marginX+6,y+6,boxW-12,boxH-12,16,false,false);
-    ctx.clip();
-    const img=await loadImage(captures[i]);
-    const scale=Math.max((boxW-12)/img.width,(boxH-12)/img.height);
-    const iw=img.width*scale, ih=img.height*scale;
-    const dx=marginX+6 + (boxW-12 - iw)/2;
-    const dy=y+6 + (boxH-12 - ih)/2;
-    ctx.drawImage(img,dx,dy,iw,ih);
-    ctx.restore();
-  }
-
-  ctx.fillStyle='#3ea67a';
-  ctx.font='24px "Patrick Hand"';
-  ctx.fillText('@saphasena68',W/2,H-50);
-
-  // ดาวเล็กสีเขียวอ่อน
-  function star(cx,cy,r){
-    ctx.beginPath();
-    for(let k=0;k<5;k++){
-      const a = (Math.PI*2*k)/5 - Math.PI/2;
-      ctx.lineTo(cx + Math.cos(a)*r, cy + Math.sin(a)*r);
-      const ia = a + Math.PI/5;
-      ctx.lineTo(cx + Math.cos(ia)*r*0.5, cy + Math.sin(ia)*r*0.5);
-    }
-    ctx.closePath();
-    ctx.fill();
-  }
-  ctx.fillStyle='#b5e1c6';
-  for(let i=0;i<20;i++){
-    const x=Math.random()*W, y=Math.random()*H;
-    const r= Math.random()*8+4;
-    star(x,y,r);
-  }
-
-  const a=document.createElement('a');
-  a.href=c.toDataURL('image/png');
-  a.download='SENA_PHOTOBOOTH_3shots.png';
-  a.click();
-});
-})();
-</script>
-</body>
-</html>
