@@ -204,7 +204,7 @@ downloadBtn.addEventListener('click',async()=>{
   for(let i=0;i<3;i++){
     const y = topY + i*(boxH + gap);
     const img=await loadImage(captures[i]);
-    const scale=Math.max(boxW/img.width, boxH/img.height);
+    const scale=Math.min(boxW/img.width, boxH/img.height); // ✅ แก้ตรงนี้ให้ภาพไม่ล้นกรอบ
     const iw=img.width*scale, ih=img.height*scale;
     const dx=marginX + (boxW - iw)/2;
     const dy=y + (boxH - ih)/2;
